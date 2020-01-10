@@ -3,16 +3,7 @@ import { IConfig, ILog, LogFactory, Runnable } from 'lib-host';
 import { ReflectHelper } from 'lib-reflect';
 import { isEmpty, isFunction, isNil } from 'lodash';
 import { HttpModuleData } from './attributes/http.module';
-import {
-  HttpApplicationData,
-  HttpServerConfigurator,
-  HTTPServerType,
-  HTTPServerTypeString,
-  IHttpServer,
-  RouteEndpoint,
-  RouteScanner,
-  ServerStarted
-} from './i.http';
+import { HttpApplicationData, HttpServerConfigurator, HTTPServerType, HTTPServerTypeString, IHttpServer, RouteEndpoint, RouteScanner, ServerStarted } from './i.http';
 import { HttpContext } from './internals/context';
 import { HttpRunConfiguration } from './internals/http.run.configuration';
 import { NodeHttpServer } from './internals/node.server';
@@ -162,6 +153,7 @@ export class HttpRunnable extends Runnable implements IHttpServer {
     const allEndpoints: RouteEndpoint[] = [];
     this.applications.forEach((app: HttpApplicationData) => {
       const controllerScanner = this.container.get<RouteScanner>(RouteScanner);
+      controllerScanner.setServer(this);
       this._log.verbose(`Registering application ${app.target.name}`);
       // Add global interceptors
       this.runConfiguration.interceptors.forEach(i => controllerScanner.addInterceptor(i));

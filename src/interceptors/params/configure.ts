@@ -1,5 +1,6 @@
 import { IHttpServer } from '../../i.http';
 import { BodyArgumentInterceptor } from './body';
+import { ContextParamInterceptor } from './context';
 import { CookieArgumentInterceptor } from './cookie';
 import { HeaderArgumentInterceptor } from './header';
 import { ParamArgumentInterceptor } from './param';
@@ -11,4 +12,5 @@ export function ConfigureDefaultParamInterceptors(srv: Readonly<IHttpServer>): v
   srv.addGlobalInterceptor(ParamArgumentInterceptor);
   srv.addGlobalInterceptor(HeaderArgumentInterceptor);
   srv.addGlobalInterceptor(CookieArgumentInterceptor);
+  srv.addGlobalInterceptor(ContextParamInterceptor);
 }

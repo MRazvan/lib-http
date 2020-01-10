@@ -24,10 +24,11 @@ export class FindMyWayRouter implements IRouter {
 
   public handleRoutes(req: any, res: any, idx: number): Promise<void> {
     if (idx > this._defaultRoutes.length) {
-      return Promise.resolve();
+      // TODO: Throw a custom exception so we can handle it better
+      throw new Error('Cannot handle route.');
     }
-    this._routeCallback(this._defaultRoutes[idx], req, res).then((ctx: IHttpContext) => {
-      if (!ctx.getResponse().isFinished()) {
+    return this._routeCallback(this._defaultRoutes[idx], req, res).then((ctx: IHttpContext) => {
+      if (!(res.finished || res.headersSent)) {
         return this.handleRoutes(req, res, idx + 1);
       }
     });
@@ -37,7 +38,7 @@ export class FindMyWayRouter implements IRouter {
     if (!isEmpty(this._defaultRoutes)) {
       this.handleRoutes(req, res, 0)
         .then(() => {
-          if (!req.headersSent && !req.isFinished) {
+          if (!res.headersSent && !res.finished) {
             res.statusCode = 500;
             res.statusMessage = 'Cannot find requested route.';
             res.end();

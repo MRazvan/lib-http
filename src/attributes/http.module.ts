@@ -17,5 +17,5 @@ export class HttpModuleData {
 export const HttpModule = (data: Partial<HttpModuleData>): ClassDecorator =>
   ClassDecoratorFactory((classData: ClassData) => {
     injectable()(classData.target);
-    classData.attributeData.push(new HttpModuleData(data));
+    classData.attributesData.push(new HttpModuleData(data));
   });

@@ -1,10 +1,5 @@
 import { Container, injectable } from 'inversify';
-import {
-  Activation,
-  ActivationsGenerator,
-  IAfterActivation,
-  IBeforeActivation
-} from 'lib-intercept';
+import { Activation, ActivationsGenerator, IAfterActivation, IBeforeActivation } from 'lib-intercept';
 import { ReflectHelper } from 'lib-reflect';
 import { cloneDeep, head, isEmpty, isNil } from 'lodash';
 import { ApiAttributeData } from '../attributes/api';
@@ -73,9 +68,12 @@ export class ControllerScanner extends RouteScanner {
       if (!isNil(defaultAttribute)) {
         this.routeEndpoints.push(
           new RouteEndpoint({
-            type: '*',
+            type: defaultAttribute.type,
             controllerAttribute: new ControllerAttributeData({ path: '' }),
-            apiAttribute: new ApiAttributeData({ type: '*', path: '' }),
+            apiAttribute: new ApiAttributeData({
+              type: defaultAttribute.type,
+              path: defaultAttribute.path || '*'
+            }),
             activation: cloneDeep(activation),
             isDefault: true
           })

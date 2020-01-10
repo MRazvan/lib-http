@@ -9,6 +9,7 @@ export * from './src/i.http';
 export * from './src/interceptors/callback';
 export * from './src/interceptors/params/body';
 export * from './src/interceptors/params/configure';
+export * from './src/interceptors/params/context';
 export * from './src/interceptors/params/cookie';
 export * from './src/interceptors/params/dto';
 export * from './src/interceptors/params/header';
@@ -16,3 +17,4 @@ export * from './src/interceptors/params/param';
 export * from './src/interceptors/params/query';
 export * from './src/internals/context';
 export * from './src/module';
+

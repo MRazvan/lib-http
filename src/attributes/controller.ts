@@ -15,6 +15,6 @@ export const Controller = (name?: string): ClassDecorator => {
     if (ctrlIdx > -1) {
       targetName = targetName.substring(0, ctrlIdx);
     }
-    classData.attributeData.push(new ControllerAttributeData({ path: targetName }));
+    classData.attributesData.push(new ControllerAttributeData({ path: targetName }));
   });
 };

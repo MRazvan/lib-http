@@ -38,6 +38,10 @@ export class RouteEndpoint {
 }
 
 export class RouteScanner {
+  protected server: IHttpServer;
+  public setServer(srv: IHttpServer): void {
+    this.server = srv;
+  }
   public addInterceptor(interceptor: Function | IBeforeActivation | IAfterActivation): void {}
   public addClass(target: Function): void {}
   public generateRoutes(container: Container): RouteEndpoint[] {

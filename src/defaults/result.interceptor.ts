@@ -1,5 +1,6 @@
 import { LogFactory } from 'lib-host';
 import { IAfterActivation } from 'lib-intercept';
+import { IResponse } from '../i.http';
 import { HttpContext } from '../internals/context';
 
 export class ResultInterceptor implements IAfterActivation {
@@ -11,33 +12,41 @@ export class ResultInterceptor implements IAfterActivation {
       }
       const result = context.getResult();
       if (result.error) {
-        response.sendStatus(500, result.error);
+        this._handleError(context, response, result.error);
       } else if (result.payload instanceof Promise) {
-        try {
-          const data = await result.payload;
-          if (response.isFinished()) {
-            return Promise.resolve(true);
-          }
-          response.send(data);
-        } catch (err) {
-          context
-            .getContainer()
-            .get<LogFactory>(LogFactory)
-            .createLog('ResultInterceptor')
-            .error('Error waiting for result to finish', err);
-          response.sendStatus(500, err);
-        }
+        return this._handlePromise(context, response, result.payload);
       } else {
         response.send(result.payload);
       }
     } catch (err) {
-      context
-        .getContainer()
-        .get<LogFactory>(LogFactory)
-        .createLog('ResultInterceptor')
-        .error('Error waiting for result to finish', err);
-      response.sendStatus(500, 'Unexpected error');
+      this._handleError(context, response, err);
     }
     return Promise.resolve(true);
+  }
+
+  private async _handlePromise(
+    context: HttpContext,
+    resp: IResponse,
+    payload: Promise<any>
+  ): Promise<boolean> {
+    try {
+      const data = await payload;
+      if (resp.isFinished()) {
+        return true;
+      }
+      resp.send(data);
+    } catch (err) {
+      this._handleError(context, resp, err);
+      return false;
+    }
+  }
+
+  private _handleError(context: HttpContext, resp: IResponse, err: any): void {
+    context
+      .getContainer()
+      .get<LogFactory>(LogFactory)
+      .createLog('ResultInterceptor')
+      .error('Error processing result.', err);
+    resp.sendStatus(500, JSON.stringify(err));
   }
 }

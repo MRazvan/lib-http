@@ -32,7 +32,7 @@ export class QueryArgumentInterceptor implements IBeforeActivation {
     const args = context.getArguments();
     const req = context.getRequest();
     params.forEach((pd: ParamDataDTO) => {
-      args[pd.idx] = req.param(pd.name) || pd.defaultVal;
+      args[pd.idx] = req.query(pd.name) || pd.defaultVal;
     });
 
     return true;

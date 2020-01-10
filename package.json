@@ -61,8 +61,9 @@
   "dependencies": {
     "find-my-way": "^2.2.1",
     "inversify": "^5.0.1",
-    "lib-intercept": "^1.0.1",
-    "lib-reflect": "^1.0.2",
+    "lib-host": "^1.0.0",
+    "lib-intercept": "^1.1.0",
+    "lib-reflect": "^1.1.1",
     "lodash": "^4.17.15"
   },
   "nyc": {
