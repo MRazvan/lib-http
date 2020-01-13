@@ -1,9 +1,11 @@
-import { LogFactory } from 'lib-host';
+import { ILog, LogFactory } from 'lib-host';
 import { IAfterActivation } from 'lib-intercept';
+import { isNil } from 'lodash';
 import { IResponse } from '../i.http';
 import { HttpContext } from '../internals/context';
 
 export class ResultInterceptor implements IAfterActivation {
+  private _log: ILog = null;
   public async after(context: HttpContext): Promise<any> {
     const response = context.getResponse();
     try {
@@ -42,11 +44,13 @@ export class ResultInterceptor implements IAfterActivation {
   }
 
   private _handleError(context: HttpContext, resp: IResponse, err: any): void {
-    context
-      .getContainer()
-      .get<LogFactory>(LogFactory)
-      .createLog('ResultInterceptor')
-      .error('Error processing result.', err);
+    if (isNil(this._log)) {
+      this._log = context
+        .getContainer()
+        .get<LogFactory>(LogFactory)
+        .createLog('ResultInterceptor');
+    }
+    this._log.error('Error processing result.', err);
     resp.sendStatus(500, JSON.stringify(err));
   }
 }

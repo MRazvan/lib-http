@@ -145,5 +145,5 @@ export interface IHttpServer {
   configure(configurator: HttpServerConfigurator): IHttpServer;
   addModule(app: Function, config?: Record<string, any>): IHttpServer;
   addGlobalInterceptor(interceptor: Function | IBeforeActivation | IAfterActivation): IHttpServer;
-  setStartedCallback(started: ServerStarted): IHttpServer;
+  onStarted(started: ServerStarted): IHttpServer;
 }

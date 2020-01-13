@@ -1,5 +1,10 @@
 import { Container, injectable } from 'inversify';
-import { Activation, ActivationsGenerator, IAfterActivation, IBeforeActivation } from 'lib-intercept';
+import {
+  Activation,
+  ActivationsGenerator,
+  IAfterActivation,
+  IBeforeActivation
+} from 'lib-intercept';
 import { ReflectHelper } from 'lib-reflect';
 import { cloneDeep, head, isEmpty, isNil } from 'lodash';
 import { ApiAttributeData } from '../attributes/api';

@@ -41,11 +41,15 @@ export class NodeHttpServer {
       const srv = this.server as Http.Server;
       if (!isNil(this._options.host)) {
         srv.listen(this._options.host, this._options.port, () => {
-          this._log.verbose('Started Server.');
+          this._options.port = (srv.address() as any).port;
+          this._options.host = this._options.host || (srv.address() as any).address;
+          this._log.verbose(`'Started Server. On ${this._options.host}:${this._options.port}`);
         });
       } else {
         srv.listen(this._options.port, () => {
-          this._log.verbose('Started Server.');
+          this._options.port = (srv.address() as any).port;
+          this._options.host = this._options.host || (srv.address() as any).address;
+          this._log.verbose(`'Started Server. On ${this._options.host}:${this._options.port}`);
         });
       }
     } else {
