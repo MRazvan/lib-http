@@ -3,16 +3,7 @@ import { IConfig, ILog, LogFactory, Runnable } from 'lib-host';
 import { ReflectHelper } from 'lib-reflect';
 import { isEmpty, isFunction, isNil } from 'lodash';
 import { HttpModuleData } from './attributes/http.module';
-import {
-  HttpApplicationData,
-  HttpServerConfigurator,
-  HTTPServerType,
-  HTTPServerTypeString,
-  IHttpServer,
-  RouteEndpoint,
-  RouteScanner,
-  ServerStarted
-} from './i.http';
+import { HttpApplicationData, HttpServerConfigurator, HTTPServerType, HTTPServerTypeString, IHttpServer, RouteEndpoint, RouteScanner, ServerStarted } from './i.http';
 import { HttpContext } from './internals/context';
 import { HttpRunConfiguration } from './internals/http.run.configuration';
 import { NodeHttpServer } from './internals/node.server';
@@ -98,8 +89,7 @@ export class HttpRunnable extends Runnable implements IHttpServer {
     this._mountModules();
 
     this._server.create(this.runConfiguration.options, this.runConfiguration.router.listen(this));
-    this._server.listen();
-    return Promise.resolve();
+    return this._server.listen();
   }
 
   public async allStarted(): Promise<void> {

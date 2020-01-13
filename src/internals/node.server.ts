@@ -36,26 +36,30 @@ export class NodeHttpServer {
       throw new Error('Support for HTTP2 is not implemented yet');
     }
   }
-  public listen(): void {
+  public listen(): Promise<void> {
     if (this._options.type === HTTPServerType.HTTP) {
       const srv = this.server as Http.Server;
       if (!isNil(this._options.host)) {
-        srv.listen(this._options.host, this._options.port, () => {
-          this._options.port = (srv.address() as any).port;
-          this._options.host = this._options.host || (srv.address() as any).address;
-          this._log.verbose(`'Started Server. On ${this._options.host}:${this._options.port}`);
+        return new Promise(resolve => {
+          srv.listen(this._options.host, this._options.port, () => {
+            this._options.port = (srv.address() as any).port;
+            this._options.host = this._options.host || (srv.address() as any).address;
+            this._log.verbose(`'Started Server. On ${this._options.host}:${this._options.port}`);
+            resolve();
+          });
         });
-      } else {
+      }
+      return new Promise(resolve => {
         srv.listen(this._options.port, () => {
           this._options.port = (srv.address() as any).port;
           this._options.host = this._options.host || (srv.address() as any).address;
           this._log.verbose(`'Started Server. On ${this._options.host}:${this._options.port}`);
+          resolve();
         });
-      }
-    } else {
-      this._log.error('Support for HTTP2 is not implemented yet');
-      throw new Error('Support for HTTP2 is not implemented yet');
+      });
     }
+    this._log.error('Support for HTTP2 is not implemented yet');
+    throw new Error('Support for HTTP2 is not implemented yet');
   }
   public stop(): Promise<any> {
     if (this._options.type === HTTPServerType.HTTP) {
