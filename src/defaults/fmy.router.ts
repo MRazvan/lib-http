@@ -75,9 +75,7 @@ export class FindMyWayRouter implements IRouter {
           (req: any, res: any, params: any) => {
             req.params = params;
             req.query = url.parse(req.url, true).query;
-            process.nextTick(() => {
-              callback(re, req, res);
-            });
+            callback(re, req, res);
           }
         );
       }
