@@ -30,14 +30,14 @@ export class HttpResponseWrapper implements IResponse {
       this._resp.end();
     } else if (isObjectLike(data)) {
       if (!this._headers['Content-Type']) {
-        this._headers['Content-Type'] = 'application/json';
+        this._headers['Content-Type'] = 'application/json; charset=utf-8';
       }
       this._setHeaders();
       this._setCookies();
       this._resp.end(JSON.stringify(data));
     } else {
       if (!this._headers['Content-Type']) {
-        this._headers['Content-Type'] = 'text/plain';
+        this._headers['Content-Type'] = 'text/plain; charset=utf-8';
       }
       this._setHeaders();
       this._setCookies();
