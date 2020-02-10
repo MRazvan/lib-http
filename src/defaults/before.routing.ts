@@ -1,8 +1,12 @@
 import { LogFactory, LogLevel } from 'lib-host';
 import { differenceBy, uniqBy } from 'lodash';
-import { IHttpServer, RouteEndpoint } from '../i.http';
+import { IHttpServer, IMountPoint, RouteEndpoint } from '../i.http';
 
-export function BeforeRouting(allEndpoints: RouteEndpoint[], srv: IHttpServer): RouteEndpoint[] {
+export function BeforeRouting(
+  allEndpoints: RouteEndpoint[],
+  mntPoint: IMountPoint,
+  srv: IHttpServer
+): RouteEndpoint[] {
   const log = srv.container.get<LogFactory>(LogFactory).createLog('RoutesProcessing');
   // First check to see if we have duplicate routes
   const filteredEndpoints = uniqBy(

@@ -14,12 +14,11 @@ export class ResultInterceptor implements IAfterActivation {
       }
       const result = context.getResult();
       if (result.error) {
-        this._handleError(context, response, result.error);
+        return this._handleError(context, response, result.error);
       } else if (result.payload instanceof Promise) {
         return this._handlePromise(context, response, result.payload);
-      } else {
-        response.send(result.payload);
       }
+      response.send(result.payload);
     } catch (err) {
       this._handleError(context, response, err);
     }
@@ -43,7 +42,7 @@ export class ResultInterceptor implements IAfterActivation {
     }
   }
 
-  private _handleError(context: HttpContext, resp: IResponse, err: any): void {
+  private _handleError(context: HttpContext, resp: IResponse, err: any): boolean {
     if (isNil(this._log)) {
       this._log = context
         .getContainer()
@@ -52,5 +51,6 @@ export class ResultInterceptor implements IAfterActivation {
     }
     this._log.error('Error processing result.', err);
     resp.sendStatus(500, JSON.stringify(err));
+    return false;
   }
 }

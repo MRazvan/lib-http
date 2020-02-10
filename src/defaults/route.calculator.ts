@@ -1,9 +1,13 @@
 import { isEmpty, trim, trimEnd } from 'lodash';
-import { IHttpServer, RouteEndpoint } from '../i.http';
+import { IHttpServer, IMountPoint, RouteEndpoint } from '../i.http';
 
-export function routeCalculator(routeEndpoint: RouteEndpoint, srv: IHttpServer): string {
+export function routeCalculator(
+  routeEndpoint: RouteEndpoint,
+  mntPoint: IMountPoint,
+  srv: IHttpServer
+): string {
   // Start with the server mount point
-  let result = trim(srv.runConfiguration.options.mountPoint || '', '/');
+  let result = trim(mntPoint.configuration.mountPoint || '', '/');
 
   const controller = trim(routeEndpoint.controllerAttribute.path, '/');
   const path = trim(routeEndpoint.apiAttribute.path, '/');

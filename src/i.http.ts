@@ -8,10 +8,22 @@ import { HttpModuleData } from './attributes/http.module';
 
 export type RequestWrapper = (request: any) => IRequest;
 export type ResponseWrapper = (response: any) => IResponse;
-export type RouteCalculation = (routeEndpoint: RouteEndpoint, srv: IHttpServer) => string;
+export type RouteCalculation = (
+  routeEndpoint: RouteEndpoint,
+  mntPoint: IMountPoint,
+  srv: IHttpServer
+) => string;
 export type ServerStarted = (server: Readonly<IHttpServer>) => void;
 export type HttpServerConfigurator = (server: Readonly<IHttpServer>) => void;
-export type RouteProcessing = (routes: RouteEndpoint[], srv: IHttpServer) => RouteEndpoint[];
+export type MountPointConfigurator = (
+  server: Readonly<IHttpServer>,
+  mountPoint: Readonly<IMountPoint>
+) => void | Promise<void>;
+export type RouteProcessing = (
+  routes: RouteEndpoint[],
+  mntPoint: IMountPoint,
+  srv: IHttpServer
+) => RouteEndpoint[];
 
 export enum HTTPServerType {
   HTTP,
@@ -22,6 +34,17 @@ export const HTTPServerTypeString: { [id: string]: HTTPServerType } = {
   http2: HTTPServerType.HTTP2
 };
 
+export interface IMountPointConfiguration {
+  requestInterceptor: Function | IBeforeActivation;
+  responseInterceptor: Function | IAfterActivation;
+  interceptors: (Function | IBeforeActivation | IAfterActivation)[];
+  routeCalculation: RouteCalculation;
+  requestWrapper: RequestWrapper;
+  responseWrapper: ResponseWrapper;
+  routeProcessing: RouteProcessing;
+  mountPoint: string;
+}
+
 export class RouteEndpoint {
   public type: HTTPRequestType;
   public controllerAttribute: ControllerAttributeData;
@@ -30,6 +53,8 @@ export class RouteEndpoint {
   public calculatedPath: string;
   public app: HttpApplicationData;
   public isDefault: boolean;
+  public mountPoint: IMountPoint;
+  public mountPointConfig: IMountPointConfiguration;
   // Data stored by interceptors specific for this route and kept during / between activations
   public routeData: { [key: string]: any };
   constructor(data: Partial<RouteEndpoint>) {
@@ -39,8 +64,12 @@ export class RouteEndpoint {
 
 export class RouteScanner {
   protected server: IHttpServer;
+  protected mountPoint: IMountPoint;
   public setServer(srv: IHttpServer): void {
     this.server = srv;
+  }
+  public setMountPoint(mp: IMountPoint): void {
+    this.mountPoint = mp;
   }
   public addInterceptor(interceptor: Function | IBeforeActivation | IAfterActivation): void {}
   public addClass(target: Function): void {}
@@ -72,8 +101,9 @@ export interface IResponse {
   setStatus(statusCode: number, statusMessage: string): void;
   sendStatus(statuscode: number, text?: string): void;
   send(data?: any): void;
+  end(data?: any): void;
   headers(): IHeaders;
-  setHeaders(): void;
+  sendHeaders(): void;
   cookies(): Map<string, string>;
   getRaw(): any;
 }
@@ -85,17 +115,18 @@ export interface IHttpServerOptions {
   mountPoint: string;
   privateKey: string;
   certificate: string;
-  setMountPoint(mountPoint: string): IHttpServerOptions;
-  setPort(port: number): IHttpServerOptions;
-  setHost(host: string): IHttpServerOptions;
-  setType(type: HTTPServerType): IHttpServerOptions;
   setCertificates(cert: string, pvk: string): IHttpServerOptions;
 }
 
 export class HttpApplicationData {
   public routes: RouteEndpoint[];
   public initialized = false;
-  constructor(public container: Container, public target: Function, public module: HttpModuleData) {
+  constructor(
+    public container: Container,
+    public target: Function | Record<string, any>,
+    public module: HttpModuleData,
+    public mountPoint: IMountPoint
+  ) {
     this.routes = [];
   }
 }
@@ -109,6 +140,7 @@ export interface IHttpContext extends IContext {
   getHost(): IHttpServer;
   getRequest(): IRequest;
   getResponse(): IResponse;
+  getMountPoint(): IMountPoint;
 }
 
 export declare type RouteCallback = (
@@ -123,27 +155,38 @@ export interface IRouter {
 }
 
 export interface IHttpRunConfiguration {
-  routeCalculation: RouteCalculation;
-  requestInterceptor: Function | IBeforeActivation; // First interceptor to execute (different from the list of interceptors)
-  responseInterceptor: Function | IAfterActivation; // Last interceptor to execute (different from the list of interceptors)
-  requestWrapper: RequestWrapper; // For wrapping http requests
-  responseWrapper: ResponseWrapper; // For wrapping http responses
   router: IRouter; // For routing
   startedCallbacks: ServerStarted[];
   server: any;
-  interceptors: (Function | IBeforeActivation | IAfterActivation)[];
   options: IHttpServerOptions;
   routeProcessing: RouteProcessing;
 }
 
-export interface IHttpServer {
-  container: Container;
-  runConfiguration: IHttpRunConfiguration;
+export interface IMountPoint {
+  configuration: IMountPointConfiguration;
   applications: HttpApplicationData[];
-  config: IConfig;
+  container: Container;
+  configure(configurator: MountPointConfigurator): IMountPoint;
+  addModule(app: Function | Record<string, any>, config?: Record<string, any>): IMountPoint;
+  addGlobalInterceptor(interceptor: Function | IBeforeActivation | IAfterActivation): IMountPoint;
+  setMountPoint(mountPoint: string): IMountPoint;
+  clearInterceptors(): IMountPoint;
+  setData(key: string, data: any): IMountPoint;
+  getData<T>(key: string, defaults?: any): T;
+}
 
-  configure(configurator: HttpServerConfigurator): IHttpServer;
-  addModule(app: Function, config?: Record<string, any>): IHttpServer;
+export interface IHttpServer {
+  runConfiguration: IHttpRunConfiguration;
+  config: IConfig;
+  container: Container;
+  rootMountPoint: IMountPoint;
+  mountPoints: IMountPoint[];
+  configure(configurator: MountPointConfigurator): IHttpServer;
+  addModule(app: Function | Record<string, any>, config?: Record<string, any>): IHttpServer;
   addGlobalInterceptor(interceptor: Function | IBeforeActivation | IAfterActivation): IHttpServer;
   onStarted(started: ServerStarted): IHttpServer;
+  setMountPoint(point: string): IHttpServer;
+  addMountPoint(point: string, configurator: MountPointConfigurator): IHttpServer;
+  setData(key: string, data: any): IHttpServer;
+  getData<T>(key: string, defaults?: any): T;
 }
