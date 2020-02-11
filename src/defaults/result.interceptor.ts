@@ -6,40 +6,33 @@ import { HttpContext } from '../internals/context';
 
 export class ResultInterceptor implements IAfterActivation {
   private _log: ILog = null;
-  public async after(context: HttpContext): Promise<any> {
+  public after(context: HttpContext): void {
     const response = context.getResponse();
-    try {
-      if (response.isFinished()) {
-        return Promise.resolve(true);
-      }
-      const result = context.getResult();
-      if (result.error) {
-        return this._handleError(context, response, result.error);
-      } else if (result.payload instanceof Promise) {
-        return this._handlePromise(context, response, result.payload);
-      }
-      response.send(result.payload);
-    } catch (err) {
-      this._handleError(context, response, err);
+    if (response.isFinished()) {
+      return;
     }
-    return Promise.resolve(true);
+
+    const result = context.getResult();
+    if (result.error) {
+      this._handleError(context, response, result.error);
+    } else if (result.payload instanceof Promise) {
+      this._handlePromise(context, response, result.payload);
+    }
+    response.end(result.payload);
   }
 
-  private async _handlePromise(
-    context: HttpContext,
-    resp: IResponse,
-    payload: Promise<any>
-  ): Promise<boolean> {
-    try {
-      const data = await payload;
-      if (resp.isFinished()) {
-        return true;
+  private _handlePromise(context: HttpContext, resp: IResponse, payload: Promise<any>): void {
+    payload.then(
+      data => {
+        if (resp.isFinished()) {
+          return true;
+        }
+        resp.end(data);
+      },
+      err => {
+        this._handleError(context, resp, err);
       }
-      resp.send(data);
-    } catch (err) {
-      this._handleError(context, resp, err);
-      return false;
-    }
+    );
   }
 
   private _handleError(context: HttpContext, resp: IResponse, err: any): boolean {
