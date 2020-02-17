@@ -3,6 +3,7 @@ import { IAfterActivation } from 'lib-intercept';
 import { isNil } from 'lodash';
 import { IResponse } from '../i.http';
 import { HttpContext } from '../internals/context';
+import { isAwaitable } from '../utils';
 
 export class ResultInterceptor implements IAfterActivation {
   private _log: ILog = null;
@@ -12,22 +13,22 @@ export class ResultInterceptor implements IAfterActivation {
       return;
     }
 
-    const result = context.getResult();
-    if (result.error) {
-      this._handleError(context, response, result.error);
-    } else if (result.payload instanceof Promise) {
-      this._handlePromise(context, response, result.payload);
+    if (!context.isSuccess()) {
+      this._handleError(context, response, context.error);
+      // Promise
+    } else if (isAwaitable(context.payload)) {
+      this._handlePromise(context, response, context.payload);
+    } else {
+      response.end(context.payload);
     }
-    response.end(result.payload);
   }
 
   private _handlePromise(context: HttpContext, resp: IResponse, payload: Promise<any>): void {
     payload.then(
       data => {
-        if (resp.isFinished()) {
-          return true;
+        if (!resp.isFinished()) {
+          resp.end(data);
         }
-        resp.end(data);
       },
       err => {
         this._handleError(context, resp, err);

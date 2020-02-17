@@ -1,5 +1,6 @@
-export const HAS_QUERY_PARAMS = 'lib-http-has-query';
-export const HAS_BODY_PARAMS = 'lib-http-has-body';
-export const HAS_PARAM_PARAMS = 'lib-http-has-param';
-export const HAS_COOKIE_PARAMS = 'lib-http-has-cookie';
-export const HAS_HEADER_PARAMS = 'lib-http-has-header';
+export const PARAMS_QUERY = 'lib-http-has-query';
+export const PARAMS_BODY = 'lib-http-has-body';
+export const PARAMS_PARAM = 'lib-http-has-param';
+export const PARAMS_COOKIE = 'lib-http-has-cookie';
+export const PARAMS_HEADER = 'lib-http-has-header';
+export const PARAMS_CONTEXT = 'lib-http-has-context';

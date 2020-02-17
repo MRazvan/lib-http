@@ -1,12 +1,17 @@
-import { IBeforeActivation } from 'lib-intercept';
+import {
+  IActivation,
+  IBeforeActivation,
+  IConfigureActivation,
+  KeepActivation
+} from 'lib-intercept';
 import { ClassData, MethodData, ParameterData, ParameterDecoratorFactory } from 'lib-reflect';
-import { HAS_PARAM_PARAMS } from '../../constants';
+import { PARAMS_PARAM } from '../../constants';
 import { HttpContext } from '../../internals/context';
 import { ParamDataDTO, ParamSource } from './dto';
 
 export const Param = (name: string, defaultVal?: any): ParameterDecorator => {
   return ParameterDecoratorFactory((classData: ClassData, md: MethodData, pd: ParameterData) => {
-    md.tags[HAS_PARAM_PARAMS] = true;
+    md.tags[PARAMS_PARAM] = true;
     md.attributesData.push(
       new ParamDataDTO({
         idx: pd.idx,
@@ -18,20 +23,22 @@ export const Param = (name: string, defaultVal?: any): ParameterDecorator => {
   });
 };
 
-export class ParamArgumentInterceptor implements IBeforeActivation {
-  public before(context: HttpContext): boolean {
-    const activationInfo = context.getActivation();
-    if (!activationInfo.method.tags[HAS_PARAM_PARAMS]) {
-      context.getActivation().removeBeforeActivation(this, context);
-      return true;
-    }
-    const params = activationInfo.method
+export class ParamArgumentInterceptor implements IConfigureActivation, IBeforeActivation {
+  public configure(activation: IActivation): KeepActivation {
+    const params = activation.method
       .getAttributesOfType<ParamDataDTO>(ParamDataDTO)
       .filter(p => p.source === ParamSource.Param);
+    if (params.length > 0) {
+      activation.data[PARAMS_PARAM] = params;
+      return KeepActivation.BEFORE;
+    }
+    return KeepActivation.NONE;
+  }
 
+  public before(context: HttpContext): boolean {
     const args = context.getArguments();
     const req = context.getRequest();
-    params.forEach((pd: ParamDataDTO) => {
+    context.getActivation().data[PARAMS_PARAM].forEach((pd: ParamDataDTO) => {
       args[pd.idx] = req.param(pd.name) || pd.defaultVal;
     });
 

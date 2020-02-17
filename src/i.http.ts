@@ -146,8 +146,7 @@ export interface IHttpContext extends IContext {
 export declare type RouteCallback = (
   endpoint: RouteEndpoint,
   req: any,
-  resp: any,
-  next?: any
+  resp: any
 ) => Promise<IHttpContext>;
 export interface IRouter {
   route(server: IHttpServer, routeEndpoints: RouteEndpoint[], callback: RouteCallback): void;

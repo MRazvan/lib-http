@@ -145,8 +145,7 @@ export class HttpRunnable extends Runnable implements IHttpServer {
     routes = this.runConfiguration.routeProcessing(routes, null, this);
     // Register the route endpoints and the handler for the endpoints
     this.runConfiguration.router.route(this, routes, (routeEnpoint, req, resp) => {
-      const ctx = new HttpContext(this, routeEnpoint, req, resp);
-      return ctx.execute();
+      return new HttpContext(this, routeEnpoint, req, resp).execute();
     });
   }
 

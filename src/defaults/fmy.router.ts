@@ -5,7 +5,6 @@ import { ILog } from 'lib-host';
 import { defaultsDeep } from 'lodash';
 import * as url from 'url';
 import { IHttpServer, IRouter, RouteCallback, RouteEndpoint } from '../i.http';
-import { EmptyWrap } from '../utils';
 
 export class FindMyWayRouter implements IRouter {
   private _log: ILog;
@@ -16,9 +15,7 @@ export class FindMyWayRouter implements IRouter {
   constructor(private readonly _config: Record<string, any>) {
     this._router = fmy(
       defaultsDeep(this._config || {}, {
-        defaultRoute: (req: any, res: any) => {
-          this.handleDefault(req, res);
-        }
+        defaultRoute: this.handleDefault.bind(this)
       })
     );
   }
@@ -26,9 +23,9 @@ export class FindMyWayRouter implements IRouter {
   public async handleDefault(req: IncomingMessage, res: ServerResponse): Promise<void> {
     try {
       for (const handler of this._defaultRoutes) {
-        const shouldHandle =
+        const canHandle =
           handler.apiAttribute.type === req.method || handler.apiAttribute.type === '*';
-        if (shouldHandle) {
+        if (canHandle) {
           await this._routeCallback(handler, req, res);
         }
       }
@@ -45,7 +42,7 @@ export class FindMyWayRouter implements IRouter {
     this._log && this._log.warn(`Default handler for route ${req.method}  - ${req.url} not found`);
 
     res.statusCode = 500;
-    res.end();
+    res.end(null, null, null);
   }
 
   public setLog(log: ILog): void {
@@ -57,7 +54,7 @@ export class FindMyWayRouter implements IRouter {
     if (req.url.indexOf('?') > 0) {
       req.query = url.parse(req.url, true).query;
     }
-    this._routeCallback(re, req, resp, EmptyWrap);
+    this._routeCallback(re, req, resp);
   }
 
   public route(
@@ -66,17 +63,12 @@ export class FindMyWayRouter implements IRouter {
     callback: RouteCallback
   ): void {
     this._routeCallback = callback;
-
+    const handler = this._routeHandler.bind(this);
     routeEndpoints.forEach(re => {
       if (re.isDefault) {
         this._defaultRoutes.push(re);
       } else {
-        this._router.on(
-          re.type as fmy.HTTPMethod,
-          re.calculatedPath,
-          this._routeHandler.bind(this),
-          re
-        );
+        this._router.on(re.type as fmy.HTTPMethod, re.calculatedPath, handler, re);
       }
     });
   }
