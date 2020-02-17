@@ -14,11 +14,13 @@ export function DefaultConfigurator(server: Readonly<IHttpServer>): void {
   const router = new FindMyWayRouter(routerConfig);
   router.setLog(container.get<LogFactory>(LogFactory).createLog('FindMyWayRouter'));
   server.runConfiguration.router = router;
-  server.runConfiguration.routeCalculation = routeCalculator;
-  server.runConfiguration.responseInterceptor = new ResultInterceptor();
-  server.runConfiguration.requestWrapper = RequestWrapper;
-  server.runConfiguration.responseWrapper = ResponseWrapper;
-  server.runConfiguration.routeProcessing = BeforeRouting;
+  server.runConfiguration.routeProcessing = (routes, mountPoint, srv) => routes;
+  server.rootMountPoint.configuration.routeCalculation = routeCalculator;
+  server.rootMountPoint.configuration.responseInterceptor = new ResultInterceptor();
+  server.rootMountPoint.configuration.requestWrapper = RequestWrapper;
+  server.rootMountPoint.configuration.responseWrapper = ResponseWrapper;
+  server.rootMountPoint.configuration.routeProcessing = BeforeRouting;
+
   // Register the default controller scanner
   if (!container.isBound(RouteScanner)) {
     container.bind(RouteScanner).to(ControllerScanner);

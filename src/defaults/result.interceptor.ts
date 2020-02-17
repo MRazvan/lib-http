@@ -3,47 +3,40 @@ import { IAfterActivation } from 'lib-intercept';
 import { isNil } from 'lodash';
 import { IResponse } from '../i.http';
 import { HttpContext } from '../internals/context';
+import { isAwaitable } from '../utils';
 
 export class ResultInterceptor implements IAfterActivation {
   private _log: ILog = null;
-  public async after(context: HttpContext): Promise<any> {
+  public after(context: HttpContext): void {
     const response = context.getResponse();
-    try {
-      if (response.isFinished()) {
-        return Promise.resolve(true);
-      }
-      const result = context.getResult();
-      if (result.error) {
-        this._handleError(context, response, result.error);
-      } else if (result.payload instanceof Promise) {
-        return this._handlePromise(context, response, result.payload);
-      } else {
-        response.send(result.payload);
-      }
-    } catch (err) {
-      this._handleError(context, response, err);
+    if (response.isFinished()) {
+      return;
     }
-    return Promise.resolve(true);
-  }
 
-  private async _handlePromise(
-    context: HttpContext,
-    resp: IResponse,
-    payload: Promise<any>
-  ): Promise<boolean> {
-    try {
-      const data = await payload;
-      if (resp.isFinished()) {
-        return true;
-      }
-      resp.send(data);
-    } catch (err) {
-      this._handleError(context, resp, err);
-      return false;
+    if (!context.isSuccess()) {
+      this._handleError(context, response, context.error);
+      // Promise
+    } else if (isAwaitable(context.payload)) {
+      this._handlePromise(context, response, context.payload);
+    } else {
+      response.end(context.payload);
     }
   }
 
-  private _handleError(context: HttpContext, resp: IResponse, err: any): void {
+  private _handlePromise(context: HttpContext, resp: IResponse, payload: Promise<any>): void {
+    payload.then(
+      data => {
+        if (!resp.isFinished()) {
+          resp.end(data);
+        }
+      },
+      err => {
+        this._handleError(context, resp, err);
+      }
+    );
+  }
+
+  private _handleError(context: HttpContext, resp: IResponse, err: any): boolean {
     if (isNil(this._log)) {
       this._log = context
         .getContainer()
@@ -52,5 +45,6 @@ export class ResultInterceptor implements IAfterActivation {
     }
     this._log.error('Error processing result.', err);
     resp.sendStatus(500, JSON.stringify(err));
+    return false;
   }
 }

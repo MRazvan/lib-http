@@ -1,12 +1,17 @@
-import { IBeforeActivation } from 'lib-intercept';
+import {
+  IActivation,
+  IBeforeActivation,
+  IConfigureActivation,
+  KeepActivation
+} from 'lib-intercept';
 import { ClassData, MethodData, ParameterData, ParameterDecoratorFactory } from 'lib-reflect';
-import { HAS_QUERY_PARAMS } from '../../constants';
+import { PARAMS_QUERY } from '../../constants';
 import { HttpContext } from '../../internals/context';
 import { ParamDataDTO, ParamSource } from './dto';
 
 export const Query = (name: string, defaultVal?: any): ParameterDecorator => {
   return ParameterDecoratorFactory((classData: ClassData, md: MethodData, pd: ParameterData) => {
-    md.tags[HAS_QUERY_PARAMS] = true;
+    md.tags[PARAMS_QUERY] = true;
     md.attributesData.push(
       new ParamDataDTO({
         idx: pd.idx,
@@ -18,20 +23,22 @@ export const Query = (name: string, defaultVal?: any): ParameterDecorator => {
   });
 };
 
-export class QueryArgumentInterceptor implements IBeforeActivation {
-  public before(context: HttpContext): boolean {
-    const activationInfo = context.getActivation();
-    if (!activationInfo.method.tags[HAS_QUERY_PARAMS]) {
-      context.getActivation().removeBeforeActivation(this, context);
-      return true;
-    }
-    const params = activationInfo.method
+export class QueryArgumentInterceptor implements IConfigureActivation, IBeforeActivation {
+  public configure(activation: IActivation): KeepActivation {
+    const params = activation.method
       .getAttributesOfType<ParamDataDTO>(ParamDataDTO)
       .filter(p => p.source === ParamSource.Query);
+    if (params.length > 0) {
+      activation.data[PARAMS_QUERY] = params;
+      return KeepActivation.BEFORE;
+    }
+    return KeepActivation.NONE;
+  }
 
+  public before(context: HttpContext): boolean {
     const args = context.getArguments();
     const req = context.getRequest();
-    params.forEach((pd: ParamDataDTO) => {
+    context.getActivation().data[PARAMS_QUERY].forEach((pd: ParamDataDTO) => {
       args[pd.idx] = req.query(pd.name) || pd.defaultVal;
     });
 

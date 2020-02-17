@@ -31,9 +31,12 @@ export class NodeHttpServer {
       } else {
         this.server = Http.createServer(listener);
       }
-    } else {
+    } else if (this._options.type === HTTPServerType.HTTP2) {
       this._log.error('Support for HTTP2 is not implemented yet');
       throw new Error('Support for HTTP2 is not implemented yet');
+    } else {
+      this._log.error('Unknown server type.');
+      throw new Error('Unknown server type.');
     }
   }
   public listen(): Promise<void> {
@@ -57,9 +60,13 @@ export class NodeHttpServer {
           resolve();
         });
       });
+    } else if (this._options.type === HTTPServerType.HTTP2) {
+      this._log.error('Support for HTTP2 is not implemented yet');
+      throw new Error('Support for HTTP2 is not implemented yet');
+    } else {
+      this._log.error('Unknown server type.');
+      throw new Error('Unknown server type.');
     }
-    this._log.error('Support for HTTP2 is not implemented yet');
-    throw new Error('Support for HTTP2 is not implemented yet');
   }
   public stop(): Promise<any> {
     if (this._options.type === HTTPServerType.HTTP) {

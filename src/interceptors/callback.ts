@@ -14,7 +14,7 @@ export class CallbackMiddlewareWrapper implements IBeforeActivation {
         if (!err) {
           resolve(true);
         } else {
-          context.getResult().setError(err);
+          context.setError(err);
           resolve(false);
         }
       });
@@ -40,7 +40,7 @@ export class CallbackMultiMiddlewareWrapper implements IBeforeActivation {
             if (!err) {
               resolve(true);
             } else {
-              context.getResult().setError(err);
+              context.setError(err);
               resolve(false);
             }
           });
@@ -55,7 +55,7 @@ export class CallbackMultiMiddlewareWrapper implements IBeforeActivation {
               if (!err) {
                 resolve(true);
               } else {
-                context.getResult().setError(err);
+                context.setError(err);
                 resolve(false);
               }
             });
