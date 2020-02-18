@@ -147,7 +147,7 @@ export declare type RouteCallback = (
   endpoint: RouteEndpoint,
   req: any,
   resp: any
-) => Promise<IHttpContext>;
+) => Promise<IContext>;
 export interface IRouter {
   route(server: IHttpServer, routeEndpoints: RouteEndpoint[], callback: RouteCallback): void;
   listen(server: IHttpServer): (req: any, resp: any) => void;
