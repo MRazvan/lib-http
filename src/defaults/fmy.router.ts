@@ -41,7 +41,7 @@ export class FindMyWayRouter implements IRouter {
     }
     this._log && this._log.warn(`Default handler for route ${req.method}  - ${req.url} not found`);
 
-    res.statusCode = 500;
+    res.statusCode = 404;
     res.end(null, null, null);
   }
 
