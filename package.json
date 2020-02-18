@@ -1,6 +1,6 @@
 {
   "name": "@mrazvan/lib-http",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Http runnable for hosting in lib-host.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
