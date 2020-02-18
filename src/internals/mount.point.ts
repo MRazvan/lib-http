@@ -3,13 +3,7 @@ import { ILog, LogFactory } from 'lib-host';
 import { ReflectHelper } from 'lib-reflect';
 import { isEmpty, isFunction, isNil } from 'lodash';
 import { HttpModuleData } from '../attributes/http.module';
-import {
-  HttpApplicationData,
-  IHttpServer,
-  IMountPoint,
-  RouteEndpoint,
-  RouteScanner
-} from '../i.http';
+import { HttpApplicationData, IHttpServer, IMountPoint, RouteEndpoint, RouteScanner } from '../i.http';
 import { MountPointConfiguration } from './http.run.configuration';
 
 export class MountPoint implements IMountPoint {
@@ -48,7 +42,9 @@ export class MountPoint implements IMountPoint {
     }
 
     const moduleData = httpModulesData[0];
-    this._log.info(`Registering http module '${app.name}'`);
+    this._log.info(
+      `Path: '${this.configuration.mountPoint}'. Registering http module '${app.name}'`
+    );
     // Setup the container for the application
     this.applications.push(
       new HttpApplicationData(
