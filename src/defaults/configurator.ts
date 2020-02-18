@@ -10,7 +10,7 @@ import { ResponseWrapper } from './wrapper.response';
 
 export function DefaultConfigurator(server: Readonly<IHttpServer>): void {
   const container = server.container;
-  const routerConfig = server.config ? server.config.get<Record<string, any>>('router') : {};
+  const routerConfig = server.config ? server.config.get<Record<string, any>>('router_config') : {};
   const router = new FindMyWayRouter(routerConfig);
   router.setLog(container.get<LogFactory>(LogFactory).createLog('FindMyWayRouter'));
   server.runConfiguration.router = router;
