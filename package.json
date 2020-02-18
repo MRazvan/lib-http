@@ -59,7 +59,9 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
+    "fast-json-stringify": "^1.16.3",
     "find-my-way": "^2.2.1",
+    "flatstr": "^1.0.12",
     "inversify": "^5.0.1",
     "lib-host": "^1.0.1",
     "lib-intercept": "^1.2.0",
