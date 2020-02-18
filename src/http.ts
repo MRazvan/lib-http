@@ -1,13 +1,7 @@
 import { Container } from 'inversify';
 import { IConfig, ILog, LogFactory, Runnable } from 'lib-host';
 import { clone, flatten, isFunction, isNil } from 'lodash';
-import {
-  HTTPServerType,
-  HTTPServerTypeString,
-  IHttpServer,
-  MountPointConfigurator,
-  ServerStarted
-} from './i.http';
+import { HTTPServerType, HTTPServerTypeString, IHttpServer, MountPointConfigurator, ServerStarted } from './i.http';
 import { HttpContext } from './internals/context';
 import { HttpRunConfiguration } from './internals/http.run.configuration';
 import { MountPoint } from './internals/mount.point';
@@ -144,8 +138,9 @@ export class HttpRunnable extends Runnable implements IHttpServer {
     // Final processing of routes
     routes = this.runConfiguration.routeProcessing(routes, null, this);
     // Register the route endpoints and the handler for the endpoints
-    this.runConfiguration.router.route(this, routes, (routeEnpoint, req, resp) => {
-      return new HttpContext(this, routeEnpoint, req, resp).execute();
+    this.runConfiguration.router.route(this, routes, (routeEndpoint, req, resp) => {
+      const ctx = new HttpContext(this, routeEndpoint, req, resp);
+      return routeEndpoint.activation.execute(ctx);
     });
   }
 
