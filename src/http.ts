@@ -1,13 +1,7 @@
 import { Container } from 'inversify';
 import { IConfig, ILog, LogFactory, Runnable } from 'lib-host';
 import { clone, flatten, isFunction, isNil } from 'lodash';
-import {
-  HTTPServerType,
-  HTTPServerTypeString,
-  IHttpServer,
-  MountPointConfigurator,
-  ServerStarted
-} from './i.http';
+import { HTTPServerType, HTTPServerTypeString, IHttpServer, MountPointConfigurator, ServerStarted } from './i.http';
 import { HttpContext } from './internals/context';
 import { HttpRunConfiguration } from './internals/http.run.configuration';
 import { MountPoint } from './internals/mount.point';
